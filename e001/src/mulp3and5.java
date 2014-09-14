@@ -1,7 +1,5 @@
 import java.util.*;
 
-
-
 public class mulp3and5 {
 	public static void main(String[] args){
 		List<Integer> array = new ArrayList<Integer>();
