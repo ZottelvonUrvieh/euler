@@ -1,5 +1,5 @@
 
-public class main {ne
+public class main {
 	gg g;
 
 }
