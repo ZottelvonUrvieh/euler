@@ -39,7 +39,7 @@ public class largestPrime {
 		{
 			answer.add(i);
 			while (list.size() > 0) {
-				c
+				//sdsdasfsd
 				if (cur%i == 0){
 					list.remove(cur);
 				}
