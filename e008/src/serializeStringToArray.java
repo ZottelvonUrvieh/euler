@@ -24,7 +24,7 @@ public class serializeStringToArray {
 				"84580156166097919133875499200524063689912560717606/n" + 
 				"05886116467109405077541002256983155200055935729725/n" + 
 				"71636269561882670428252483600823257530420752963450/n";
-		System.out.println(split(input, splitString)[0]);
+		System.out.println(adjacent(input, splitString));
 		System.out.println();		
 	}
 	
@@ -33,13 +33,24 @@ public class serializeStringToArray {
 		return splitts;		
 	}
 	
-	public static String[] serialize(String input, String splitString){
+	public static String[] serialize(String input){
 		String[] serialized = input.split("|");
 		return serialized;		
 	}
 	
-	public static int adjacent(String[] input){
-		
-		return 0;
+	public static long adjacent(String input, String splitString){
+		long heighest = 0;
+		for (int i = 0; i <= 19; i++){
+			for (int offset = 0; offset < 49-13; offset++){
+				long cHeighest = 1;
+				for (int k = 0; k < 13; k++){
+					cHeighest *= Integer.parseInt(serialize(split(input,splitString)[i])[k+offset]);
+				}
+				if (cHeighest > heighest){
+					heighest = cHeighest;
+				}
+			}
+		}
+		return heighest;
 	}
 }
