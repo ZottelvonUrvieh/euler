@@ -3,6 +3,7 @@
 	<name>e011</name>
 	<comment></comment>
 	<projects>
+		<project>e008</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
