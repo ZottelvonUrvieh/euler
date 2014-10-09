@@ -1,4 +1,5 @@
 import java.lang.*;
+import java.util.Scanner;
 
 public class bigSum {
 
@@ -130,10 +131,10 @@ public class bigSum {
 //		long time2 = System.currentTimeMillis(); 
 //		long timeDiff = time2 - time1;
 //		System.out.println(timeDiff);
-		bint mult1 = new bint("6",10);
-		bint mult2 = new bint("5",10);
+		bint mult1 = new bint("10", 10);
+		bint mult2 = new bint("3", 10);
 		System.out.println(mult1.mod(mult2).toLong());
-//		System.out.println(product.toLong());
+//		System.out.println(product);
 	}
 
 }

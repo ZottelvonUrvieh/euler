@@ -97,9 +97,19 @@ public class bint {
 		return answer;
 	}
 	
+	public bint divideBy2() {
+		bint answer = new bint();
+		for (int i = this.bits.length()-1; i > 0; i--) {
+			if (this.bits.get(i)) {
+				answer.bits.set(i-1);
+			}
+		}
+		return answer;		
+	}
+	
 	
 	// <<<<<<<<<<<<<<<Conversions>>>>>>>>>>>>>>
-	public String toString() {
+	public String toBinary() {
 		String answer = "";			
 		
 		String binary = this.toBinary();		
@@ -112,7 +122,7 @@ public class bint {
 		return answer;
 	}
 	
-	public String toBinary() {
+	public String toString() {
 		String answer = "";
 		for (int i = 0; i < this.bits.length(); i++) {
 			if (this.bits.get(i)) {
@@ -188,6 +198,38 @@ public class bint {
 		return new bint(bitset);
 	}
 	
+	public bint sub(bint substract) {
+//		int maxlenght = 0;
+		BitSet bitset = new BitSet();
+		boolean carry = false;
+		if (substract.isGreaterThan(this)) {
+			bint zero = new bint("0",10);
+			return zero;
+		}
+		for (int i = 0; i <= this.bits.length(); i++) {
+			if ((!substract.bits.get(i) && !this.bits.get(i) && !carry)| (substract.bits.get(i) && this.bits.get(i) && !carry) | (!substract.bits.get(i) && this.bits.get(i) && carry)){
+				bitset.set(i, false);
+				carry = false;
+			}
+			else if(!substract.bits.get(i) && this.bits.get(i) && !carry) {
+				bitset.set(i, true);
+				carry = false;
+			}
+			else if(substract.bits.get(i) && !this.bits.get(i) && carry) {
+				bitset.set(i, false);
+				carry = true;
+			}
+			else if ((!substract.bits.get(i) && !this.bits.get(i) && carry) | (substract.bits.get(i) && !this.bits.get(i) && !carry)| (substract.bits.get(i) && this.bits.get(i) && carry)) {
+				bitset.set(i, true);
+				carry = true;
+			}
+		}
+//		if (carry) {
+//			bitset.set(bitset.length(),true);
+//		}			
+		return new bint(bitset);
+	}
+	
 	private static int countBooles(boolean one, boolean two, boolean three) {
 		int amount = 0;
 		if (one) amount++;
@@ -222,31 +264,128 @@ public class bint {
 	}
 	
 	public bint mod(bint divisor) {
-		bint answer = new bint();
-		if (divisor.isGreaterAs(this)){
-			return this;
-		}
-		if (this.bits.length() == divisor.bits.length()) {
-			BitSet b = new	BitSet();
-			for (int i = 0; i < this.bits.length(); i++) {
-				b.set(i);
+		bint a, b, aFront, d, aBack;
+		a = this;
+		b = divisor;
+		
+		while (true) {
+			if (divisor.isGreaterThan(a)){
+				return a;
 			}
-			divisor.bits.xor(b);
-			answer = this.add(divisor);
+			if (a.bits.length() == divisor.bits.length()) {
+				this.bits = this.sub(divisor).bits;
+			}	
+			
+			aFront = cutForDivisonAFront(a, divisor);
+			d = aFront.sub(b);
+			aBack = cutForDivisionABack(a, aFront);
+			a = combineForDivision(d, aBack, a, b);
+			if (a.bits.length() == aFront.bits.length() && divisor.isGreaterThan(d) && divisor.isGreaterThan(aFront)) {
+				return d;
+			}
+		}
+		
+//		while (this.isGreaterThan(divisor)){
+//			bint newDivident = new bint(this.bits);
+//			for (int i = divisor.bits.length(); i >= 0; i--) {
+//				if (this.isGreaterThan(newDivident)) {
+//					newDivident = newDivident.divideBy2();
+//				}
+//			}
+//			newDivident = newDivident.sub(divisor);
+//			for (int i = this.bits.length() - divisor.bits.length() - 1; i >= 0; i--) {
+//				if (this.bits.get(i)) { 
+//					this.bits.set(i);
+//				}
+//			}
+//			for (int i = newDivident.bits.length(); i >= 0; i--) {
+//				if (newDivident.bits.get(i)) {
+//					this.bits.set(i+this.bits.length(),true);
+//				}
+//			}		
+//		}
+	}
+	
+	private bint fillWithBitsOfBint(BitSet bits) {
+		bint answer = new bint();
+		for(int i = 0; i < bits.length(); i++) {
+			if (bits.get(i)) {
+				answer.bits.set(i,true);
+			}
 		}
 		return answer;
 	}
 	
-	public boolean isGreaterAs(bint smaller) {
+	private bint cutForDivisionABack(bint a, bint aFront) {
+		bint answer = fillWithBitsOfBint(a.bits);
+		for (int i = a.bits.length() - aFront.bits.length(); i < a.bits.length(); i++) {
+			answer.bits.set(i,false);
+		}
+		return answer;
+	}
+
+	bint combineForDivision(bint d, bint aBack, bint a, bint divisor) {
+		bint answer = fillWithBitsOfBint(aBack.bits);
+		int offset = answer.bits.length();
+		if (a.bits.length() != divisor.bits.length() && aBack.bits.length() == 0) {
+			offset++;
+		}
+		
+		for (int i = 0; i < d.bits.length(); i++) {
+			if (d.bits.get(i)) {
+				answer.bits.set(i+offset);
+			}
+		}
+		return answer;
+	}
+
+	/**
+	 * 
+	 * @param n how many bits should remain (from MSB to LSB)
+	 */
+	private bint cutForDivisonAFront(bint a, bint divisor) {
+		bint answer = new bint(a.bits);
+		for (int i = 0; i < a.bits.length() - divisor.bits.length(); i++) {
+			answer = answer.divideBy2();
+		}
+		if (answer.isGreaterOrEqualThan(divisor)) {
+			return answer;
+		}
+		else {
+			answer = new bint(a.bits);
+			for (int i = 0; i < a.bits.length() - divisor.bits.length() - 1; i++) {
+				answer = answer.divideBy2();
+			}
+		}
+		return answer;
+	}
+	
+	public boolean isGreaterThan(bint smaller) {
 		if (smaller.bits.length() > this.bits.length()){
-//			smaller.bits.
 			return false;
 		}
 		else if (smaller.bits.length() == this.bits.length()) {
-			for (int i = 0; i < smaller.bits.length(); i++) {
+			for (int i = smaller.bits.length() - 1; i >= 0; i--) {
 				if (smaller.bits.get(i) && !this.bits.get(i)) {
 					return false;
-				}				
+				}
+				if (i == 0 && ((smaller.bits.get(i) && this.bits.get(i)) | (!smaller.bits.get(i) && !this.bits.get(i)))) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	public boolean isGreaterOrEqualThan(bint smaller) {
+		if (smaller.bits.length() > this.bits.length()){
+			return false;
+		}
+		else if (smaller.bits.length() == this.bits.length()) {
+			for (int i = smaller.bits.length() - 1; i >= 0; i--) {
+				if (smaller.bits.get(i) && !this.bits.get(i)) {
+					return false;
+				}
 			}
 		}
 		return true;
