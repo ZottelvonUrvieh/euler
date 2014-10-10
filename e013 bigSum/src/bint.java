@@ -13,7 +13,7 @@ public class bint {
 	}
 	
 	/**
-	 * 
+	 * Creates new big numbers (biggest: max_int x 9's)
 	 * @param number
 	 * @param type (possible: 10 for decimal, 2 for binary)
 	 */
@@ -288,6 +288,10 @@ public class bint {
 			}
 		}		
 		return work;		
+	}
+	
+	public bint divide(bint divder) {
+		return divder;		
 	}
 	
 	public bint mod(bint divisor) {
