@@ -97,6 +97,52 @@ public class bint {
 		return answer;
 	}
 	
+	public String multBy2 (String number) {
+		String answer = "";
+		String[] work = number.split("|");
+		int carry = 0;
+		for (int i = work.length - 1; i >= 0 ; i--) {
+			if ((Integer.parseInt(work[i])*2 + carry) < 10) {
+				answer = (Integer.parseInt(work[i])*2 + carry) + answer;
+				carry = 0;
+			}
+			else {
+				answer = ((Integer.parseInt(work[i]) - 5)*2 + carry) + answer;
+				carry = 1;
+			}
+		}
+		if (carry == 1) {
+			answer = 1 + answer;
+		}
+		return answer;
+	}
+	
+	public String addOne(String s){
+		String[] work = s.split("|");
+		String answer = "";
+		int carry = 1;
+		int index = s.length() - 1;
+		while (carry == 1) {
+			if (index < 0) break;
+			if (Integer.parseInt(work[index]) < 9) {
+				work[index] = (Integer.parseInt(work[index]) + 1) + "";
+				carry = 0;
+			}
+			else {
+				work[index] = 0 + "";
+				carry = 1;
+			}
+			index--;
+		}	
+		for (int i = 0; i < work.length; i++) {
+			answer += work[i];
+		}
+		if (carry == 1) {
+			answer = 1 + answer;
+		}
+		return answer;		
+	}
+	
 	public bint divideBy2() {
 		bint answer = new bint();
 		for (int i = this.bits.length()-1; i > 0; i--) {
@@ -109,20 +155,18 @@ public class bint {
 	
 	
 	// <<<<<<<<<<<<<<<Conversions>>>>>>>>>>>>>>
-	public String toBinary() {
-		String answer = "";			
-		
-		String binary = this.toBinary();		
-		
-		for (int i = 0; i < this.bits.length(); i++) {
-			if (this.bits.get(i)) {
-				answer += "2^" + i + " ";
+	public String toString() {
+		String answer = "0";
+		for (int i = this.bits.length()-1; i >= 0; i--) {
+			answer = multBy2(answer);
+			if(this.bits.get(i)) {
+				answer = addOne(answer);
 			}
 		}
 		return answer;
 	}
 	
-	public String toString() {
+	public String toBinary() {
 		String answer = "";
 		for (int i = 0; i < this.bits.length(); i++) {
 			if (this.bits.get(i)) {
@@ -143,23 +187,6 @@ public class bint {
 			}
 		}
 		return answer;
-	}
-	
-	public String toHex() {
-		String[] answer = new String[((int) this.bits.length()+3)/4];
-		String work = "";
-		String bin = this.toBinary();
-		int size = bin.length();
-		int rest = size%4;
-		for (int i = bin.length(); i >= rest; i = i-4) {
-			try {
-				work += bin.substring(i-4, i) + " ";
-			}
-			catch (Exception e){
-				work += bin.substring(i-rest, i);
-			}
-		}
-		return work;
 	}
 	
 	// <<<<<<<<<<<<<<<Operations>>>>>>>>>>>>>>
@@ -264,46 +291,15 @@ public class bint {
 	}
 	
 	public bint mod(bint divisor) {
-		bint a, b, aFront, d, aBack;
+		bint a, aFront, aBack, substract = new bint();
 		a = this;
-		b = divisor;
-		
-		while (true) {
-			if (divisor.isGreaterThan(a)){
-				return a;
-			}
-			if (a.bits.length() == divisor.bits.length()) {
-				this.bits = this.sub(divisor).bits;
-			}	
-			
-			aFront = cutForDivisonAFront(a, divisor);
-			d = aFront.sub(b);
+		while (a.isGreaterOrEqualThan(divisor)) {
+			aFront =  cutForDivisonAFront(a, divisor);
 			aBack = cutForDivisionABack(a, aFront);
-			a = combineForDivision(d, aBack, a, b);
-			if (a.bits.length() == aFront.bits.length() && divisor.isGreaterThan(d) && divisor.isGreaterThan(aFront)) {
-				return d;
-			}
-		}
-		
-//		while (this.isGreaterThan(divisor)){
-//			bint newDivident = new bint(this.bits);
-//			for (int i = divisor.bits.length(); i >= 0; i--) {
-//				if (this.isGreaterThan(newDivident)) {
-//					newDivident = newDivident.divideBy2();
-//				}
-//			}
-//			newDivident = newDivident.sub(divisor);
-//			for (int i = this.bits.length() - divisor.bits.length() - 1; i >= 0; i--) {
-//				if (this.bits.get(i)) { 
-//					this.bits.set(i);
-//				}
-//			}
-//			for (int i = newDivident.bits.length(); i >= 0; i--) {
-//				if (newDivident.bits.get(i)) {
-//					this.bits.set(i+this.bits.length(),true);
-//				}
-//			}		
-//		}
+			substract = aFront.sub(divisor);
+			a = combineForDivision(substract, aBack, a.bits.length() - aFront.bits.length() - aBack.bits.length());
+		}				
+		return a;
 	}
 	
 	private bint fillWithBitsOfBint(BitSet bits) {
@@ -324,19 +320,14 @@ public class bint {
 		return answer;
 	}
 
-	bint combineForDivision(bint d, bint aBack, bint a, bint divisor) {
-		bint answer = fillWithBitsOfBint(aBack.bits);
-		int offset = answer.bits.length();
-		if (a.bits.length() != divisor.bits.length() && aBack.bits.length() == 0) {
-			offset++;
-		}
-		
-		for (int i = 0; i < d.bits.length(); i++) {
-			if (d.bits.get(i)) {
-				answer.bits.set(i+offset);
-			}
-		}
-		return answer;
+	bint combineForDivision(bint substract, bint aBack, int backLeadingZeros) {		
+		// extending the substract with "0's" on the end to make a addition with aBack possible
+		bint two = new bint();
+		two.bits.set(1);
+		for (int i = 0; i < backLeadingZeros + aBack.bits.length(); i++) {
+			substract = substract.mult(two);
+		}	
+		return substract.add(aBack);
 	}
 
 	/**
