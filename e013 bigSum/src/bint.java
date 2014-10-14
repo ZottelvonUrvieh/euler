@@ -395,7 +395,7 @@ public class bint {
 		int carry = 1;
 		int index = s.length() - 1;
 		while (carry == 1) {
-			if (index < 0) break;
+			if (index <= 0) break;
 			if (Integer.parseInt(work[index]) < 9) {
 				work[index] = (Integer.parseInt(work[index]) + 1) + "";
 				carry = 0;
@@ -419,7 +419,7 @@ public class bint {
 		String answer = "";
 		String[] work = number.split("|");
 		int uneven = 0;
-		for (int i = 0; i < work.length; i++) {
+		for (int i = 1; i < work.length; i++) {
 			if (Integer.parseInt(work[i]) %2 == 0) {
 				answer += ((Integer.parseInt(work[i]) / 2) + uneven);
 				uneven = 0;
@@ -459,7 +459,7 @@ public class bint {
 		String answer = "";
 		String[] work = number.split("|");
 		int carry = 0;
-		for (int i = work.length - 1; i >= 0 ; i--) {
+		for (int i = work.length - 1; i > 0 ; i--) {
 			if ((Integer.parseInt(work[i])*2 + carry) < 10) {
 				answer = (Integer.parseInt(work[i])*2 + carry) + answer;
 				carry = 0;
